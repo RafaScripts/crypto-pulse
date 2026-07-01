@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "market.ticks.normalized",
+  "type": "object",
+  "required": ["event_id", "exchange", "symbol", "bid", "ask", "timestamp"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "exchange": {"type": "string"},
+    "symbol": {"type": "string"},
+    "bid": {"type": "number"},
+    "ask": {"type": "number"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "source_latency_ms": {"type": "integer"}
+  }
+}

@@ -1,0 +1,40 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: crypto-pulse-ingress
+spec:
+  rules:
+  - host: cryptopulse.rafascripts.dev.br
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 3001
+      - path: /socket.io
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 3001
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: web-dashboard
+            port:
+              number: 3000
+  - host: cryptomcp.rafascripts.dev.br
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mcp-server
+            port:
+              number: 3004

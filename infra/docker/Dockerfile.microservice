@@ -1,0 +1,32 @@
+FROM node:20-alpine
+
+# Habilitar o pnpm
+RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
+WORKDIR /app
+
+# Copiar a configuração do monorepo
+COPY package.json pnpm-workspace.yaml tsconfig.json ./
+COPY packages ./packages
+COPY services ./services
+
+# Instalar dependências de todo o workspace
+RUN pnpm install
+
+# Gerar o cliente Prisma
+RUN pnpm --filter @crypto-pulse/database exec prisma generate
+RUN pnpm --filter @crypto-pulse/database run build
+
+# Receber qual serviço queremos buildar
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+# Fazer o build apenas das dependências deste serviço e do próprio serviço
+RUN pnpm --filter @crypto-pulse/${SERVICE_NAME}... run build
+
+# Definir como produção
+ENV NODE_ENV=production
+
+# O comando inicia o serviço compilado no modo de produção
+CMD pnpm --filter @crypto-pulse/${SERVICE_NAME} run start:prod

@@ -1,0 +1,23 @@
+{
+  "name": "crypto-pulse",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "infra:start": "docker compose -f infra/docker/docker-compose.yml up -d",
+    "infra:stop": "docker compose -f infra/docker/docker-compose.yml down",
+    "db:setup": "pnpm --filter @crypto-pulse/database run prisma:push",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "dev:services": "pnpm --parallel --filter \"./services/*\" run start:dev",
+    "dev:web": "pnpm --filter @crypto-pulse/web-dashboard run dev",
+    "dev": "pnpm run dev:services & pnpm run dev:web"
+  },
+  "dependencies": {
+    "@nestjs/microservices": "10.4.15",
+    "@prisma/client": "^7.8.0"
+  }
+}

@@ -1,0 +1,199 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.titleGroup h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #ececf1, var(--primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.titleGroup p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.deployButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 210, 255, 0.3);
+}
+
+.deployButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 210, 255, 0.4);
+}
+
+.deployButton:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+/* History Table */
+.historyCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.historyCard h2 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.table tbody tr:hover {
+  background: var(--surface-hover);
+  cursor: pointer;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.statusSUCCESS {
+  background: rgba(0, 255, 128, 0.15);
+  color: var(--success);
+}
+
+.statusFAILED {
+  background: rgba(255, 60, 60, 0.15);
+  color: var(--error);
+}
+
+.statusRUNNING {
+  background: rgba(0, 210, 255, 0.15);
+  color: var(--primary);
+}
+
+.statusPENDING {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+}
+
+/* Terminal */
+.terminalCard {
+  background: #0d0d12;
+  border: 1px solid #2a2a35;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminalHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #15151c;
+  border-bottom: 1px solid #2a2a35;
+}
+
+.terminalDots {
+  display: flex;
+  gap: 6px;
+}
+
+.terminalDots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.terminalDots span:nth-child(1) { background: #ff5f56; }
+.terminalDots span:nth-child(2) { background: #ffbd2e; }
+.terminalDots span:nth-child(3) { background: #27c93f; }
+
+.terminalTitle {
+  color: #8b8b9e;
+  font-size: 0.85rem;
+  font-family: monospace;
+  margin-left: 0.5rem;
+}
+
+.terminalBody {
+  padding: 1rem;
+  height: 600px;
+  overflow-y: auto;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #e2e2e8;
+}
+
+.terminalBody p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.logLine {
+  margin-bottom: 2px;
+}

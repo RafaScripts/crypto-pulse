@@ -1,0 +1,22 @@
+FROM node:20-alpine
+
+RUN corepack enable && corepack prepare pnpm@9 --activate
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml tsconfig.json ./
+COPY packages ./packages
+COPY services ./services
+
+RUN pnpm install
+
+RUN pnpm --filter @crypto-pulse/database exec prisma generate
+RUN pnpm --filter @crypto-pulse/database run build
+
+RUN pnpm --filter @crypto-pulse/web-dashboard run build
+
+ENV NODE_ENV=production
+EXPOSE 3000
+
+CMD pnpm --filter @crypto-pulse/web-dashboard start

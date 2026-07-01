@@ -1,0 +1,171 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(120)
+  email            String            @unique @db.VarChar(255)
+  password_hash    String            @db.VarChar(255)
+  role             String            @default("user") @db.VarChar(20)
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @default(now()) @updatedAt
+
+  preferences      UserPreference?
+  alert_channels   AlertChannel[]
+  dispatched_alerts DispatchedAlert[]
+
+  @@map("users")
+}
+
+model UserPreference {
+  id                       String                     @id @default(uuid()) @db.Uuid
+  user_id                  String                     @unique @db.Uuid
+  min_profit_threshold_pct Decimal                    @default(0.1000) @db.Decimal(10, 4)
+  notifications_enabled    Boolean                    @default(true)
+  created_at               DateTime                   @default(now())
+  updated_at               DateTime                   @default(now()) @updatedAt
+
+  user                     User                       @relation(fields: [user_id], references: [id])
+  trading_pairs            UserPreferencePair[]
+  exchanges                UserPreferenceExchange[]
+
+  @@map("user_preferences")
+}
+
+model UserPreferencePair {
+  id                 String         @id @default(uuid()) @db.Uuid
+  user_preference_id String         @db.Uuid
+  trading_pair_id    String         @db.Uuid
+
+  user_preference    UserPreference @relation(fields: [user_preference_id], references: [id])
+  trading_pair       TradingPair    @relation(fields: [trading_pair_id], references: [id])
+
+  @@map("user_preference_pairs")
+}
+
+model UserPreferenceExchange {
+  id                 String         @id @default(uuid()) @db.Uuid
+  user_preference_id String         @db.Uuid
+  exchange_id        String         @db.Uuid
+
+  user_preference    UserPreference @relation(fields: [user_preference_id], references: [id])
+  exchange           Exchange       @relation(fields: [exchange_id], references: [id])
+
+  @@map("user_preference_exchanges")
+}
+
+model AlertChannel {
+  id                String            @id @default(uuid()) @db.Uuid
+  user_id           String            @db.Uuid
+  type              String            @db.VarChar(20)
+  target            String            @db.VarChar(255)
+  enabled           Boolean           @default(true)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @default(now()) @updatedAt
+
+  user              User              @relation(fields: [user_id], references: [id])
+  dispatched_alerts DispatchedAlert[]
+
+  @@map("alert_channels")
+}
+
+model Exchange {
+  id                        String                   @id @default(uuid()) @db.Uuid
+  code                      String                   @unique @db.VarChar(50)
+  name                      String                   @db.VarChar(120)
+  status                    String                   @default("active") @db.VarChar(20)
+  created_at                DateTime                 @default(now())
+
+  fee_profiles              ExchangeFeeProfile[]
+  user_preferences          UserPreferenceExchange[]
+  opportunities_as_buy      ArbitrageOpportunity[]   @relation("BuyExchange")
+  opportunities_as_sell     ArbitrageOpportunity[]   @relation("SellExchange")
+
+  @@map("exchanges")
+}
+
+model TradingPair {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  symbol                String                   @unique @db.VarChar(30)
+  base_asset            String                   @db.VarChar(20)
+  quote_asset           String                   @db.VarChar(20)
+  active                Boolean                  @default(true)
+  created_at            DateTime                 @default(now())
+
+  user_preferences      UserPreferencePair[]
+  opportunities         ArbitrageOpportunity[]
+
+  @@map("trading_pairs")
+}
+
+model ExchangeFeeProfile {
+  id                  String   @id @default(uuid()) @db.Uuid
+  exchange_id         String   @db.Uuid
+  maker_fee_pct       Decimal  @db.Decimal(10, 4)
+  taker_fee_pct       Decimal  @db.Decimal(10, 4)
+  withdrawal_fee_flat Decimal? @db.Decimal(18, 8)
+  updated_at          DateTime @default(now()) @updatedAt
+
+  exchange            Exchange @relation(fields: [exchange_id], references: [id])
+
+  @@map("exchange_fee_profiles")
+}
+
+model ArbitrageOpportunity {
+  id                      String            @id @default(uuid()) @db.Uuid
+  trading_pair_id         String            @db.Uuid
+  buy_exchange_id         String            @db.Uuid
+  sell_exchange_id        String            @db.Uuid
+  buy_price               Decimal           @db.Decimal(18, 8)
+  sell_price              Decimal           @db.Decimal(18, 8)
+  gross_spread_pct        Decimal           @db.Decimal(10, 4)
+  total_fees_pct          Decimal           @db.Decimal(10, 4)
+  net_profit_pct          Decimal           @db.Decimal(10, 4)
+  estimated_profit_amount Decimal?          @db.Decimal(18, 8)
+  detected_at             DateTime
+  status                  String            @default("detected") @db.VarChar(20)
+
+  trading_pair            TradingPair       @relation(fields: [trading_pair_id], references: [id])
+  buy_exchange            Exchange          @relation("BuyExchange", fields: [buy_exchange_id], references: [id])
+  sell_exchange           Exchange          @relation("SellExchange", fields: [sell_exchange_id], references: [id])
+  dispatched_alerts       DispatchedAlert[]
+
+  @@index([detected_at(sort: Desc)])
+  @@index([trading_pair_id, detected_at(sort: Desc)])
+  @@index([buy_exchange_id, sell_exchange_id, detected_at(sort: Desc)])
+  @@map("arbitrage_opportunities")
+}
+
+model DispatchedAlert {
+  id               String               @id @default(uuid()) @db.Uuid
+  opportunity_id   String               @db.Uuid
+  user_id          String               @db.Uuid
+  alert_channel_id String               @db.Uuid
+  message_payload  Json
+  delivery_status  String               @default("pending") @db.VarChar(20)
+  delivered_at     DateTime?
+  error_message    String?              @db.Text
+
+  opportunity      ArbitrageOpportunity @relation(fields: [opportunity_id], references: [id])
+  user             User                 @relation(fields: [user_id], references: [id])
+  alert_channel    AlertChannel         @relation(fields: [alert_channel_id], references: [id])
+
+  @@index([user_id, delivered_at(sort: Desc)])
+  @@map("dispatched_alerts")
+}
+
+model Deployment {
+  id           String    @id @default(uuid()) @db.Uuid
+  status       String    @default("PENDING") @db.VarChar(20)
+  logs         String?   @db.Text
+  started_at   DateTime  @default(now())
+  finished_at  DateTime?
+
+  @@map("deployments")
+}

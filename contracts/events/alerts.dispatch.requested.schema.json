@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "alerts.dispatch.requested",
+  "type": "object",
+  "required": ["event_id", "opportunity_id", "user_id", "channel", "target", "message", "requested_at"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "opportunity_id": {"type": "string", "format": "uuid"},
+    "user_id": {"type": "string", "format": "uuid"},
+    "channel": {"type": "string", "enum": ["telegram"]},
+    "target": {"type": "string"},
+    "message": {"type": "string"},
+    "requested_at": {"type": "string", "format": "date-time"}
+  }
+}

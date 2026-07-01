@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: crypto-pulse-config
+data:
+  KAFKA_BROKERS: "kafka:9092"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_URL: "redis://redis:6379"
+  DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/crypto_pulse?schema=public"
+  AUTH_SERVICE_HOST: "auth-service"
+  AUTH_SERVICE_PORT: "3002"
+  TELEGRAM_BOT_TOKEN: "" # Para injetar em prod
+  TELEGRAM_CHAT_ID: "" # Para injetar em prod

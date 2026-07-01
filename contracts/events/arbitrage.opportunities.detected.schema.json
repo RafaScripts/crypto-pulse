@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "arbitrage.opportunities.detected",
+  "type": "object",
+  "required": ["event_id", "symbol", "buy_exchange", "sell_exchange", "buy_price", "sell_price", "gross_spread_pct", "total_fees_pct", "net_profit_pct", "detected_at"],
+  "properties": {
+    "event_id": {"type": "string", "format": "uuid"},
+    "symbol": {"type": "string"},
+    "buy_exchange": {"type": "string"},
+    "sell_exchange": {"type": "string"},
+    "buy_price": {"type": "number"},
+    "sell_price": {"type": "number"},
+    "gross_spread_pct": {"type": "number"},
+    "total_fees_pct": {"type": "number"},
+    "net_profit_pct": {"type": "number"},
+    "estimated_profit_amount": {"type": "number"},
+    "detected_at": {"type": "string", "format": "date-time"}
+  }
+}

@@ -1,0 +1,29 @@
+datadog:
+  apiKey: "9da59f4553bc4846f53b069ca408525d"
+  appKey: "" # Preencha se quiser habilitar features adicionais (como Datadog APM metrics)
+  site: "datadoghq.com"
+  clusterName: "crypto-pulse-cluster"
+  
+  tags:
+    - "project:crypto-pulse"
+    - "provider:openstack"
+    - "role:k8s-node"
+
+  # Habilita a coleta de logs dos containers Kubernetes
+  logs:
+    enabled: true
+    containerCollectAll: true
+
+  # Habilita APM para tracing (se sua aplicação usa OpenTelemetry ou APM)
+  apm:
+    portEnabled: true
+
+  # Habilita a coleta de métricas de Prometheus usando Autodiscovery
+  prometheusScrape:
+    enabled: true
+    version: 2
+
+# Configuração que garante que o Datadog Agent rodará em TODOS os nós do cluster (DaemonSet)
+agents:
+  enabled: true
+  useHostNetwork: true

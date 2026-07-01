@@ -1,0 +1,29 @@
+{
+  "name": "@crypto-pulse/mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:prod": "node dist/server.js",
+    "dev": "tsc-watch --onSuccess 'node dist/server.js'"
+  },
+  "dependencies": {
+    "@crypto-pulse/database": "workspace:*",
+    "@crypto-pulse/events": "workspace:*",
+    "@crypto-pulse/observability": "workspace:*",
+    "@google/generative-ai": "^0.21.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@nestjs/microservices": "10.4.15",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "tsc-watch": "^6.2.0",
+    "typescript": "^5.4.5"
+  }
+}
