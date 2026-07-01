@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import express from "express";
@@ -99,27 +100,72 @@ server.tool(
   }
 );
 
-// Configuração e inicialização do servidor Express para transporte SSE
+// Configuração e inicialização do servidor Express para transporte SSE (porta 3004)
 async function main() {
   const app = express();
-  let transport: SSEServerTransport;
+  
+  // O MCP requer que suportemos múltiplas sessões simultâneas em SSE.
+  // Vamos armazenar cada transport em um Map, chaveado pelo sessionId.
+  const transports = new Map<string, SSEServerTransport>();
+
+  // Fallback global para clientes que falham em enviar o sessionId
+  let globalTransport: SSEServerTransport | null = null;
 
   app.get("/sse", async (req, res) => {
-    transport = new SSEServerTransport("/message", res);
+    console.error("GET /sse connected");
+    // Definimos a URL completa de onde os POSTs chegarão
+    const messageUrl = `http://localhost:${process.env.PORT || 3004}/message`;
+    const transport = new SSEServerTransport(messageUrl, res);
+    
     await server.connect(transport);
+
+    // Armazena o transport para que o endpoint POST consiga encontrá-lo
+    transports.set(transport.sessionId, transport);
+    globalTransport = transport;
+
+    // Cleanup ao fechar a conexão
+    res.on("close", () => {
+      transports.delete(transport.sessionId);
+      if (globalTransport === transport) {
+        globalTransport = null;
+      }
+    });
   });
 
   app.post("/message", async (req, res) => {
-    if (transport) {
+    console.error("POST /message received with query:", req.query);
+    const sessionId = req.query.sessionId as string;
+    
+    let transport = transports.get(sessionId);
+    if (!transport && globalTransport) {
+      console.error("Utilizando globalTransport como fallback (sessionId ausente ou inválido).");
+      transport = globalTransport;
+    }
+
+    if (!transport) {
+      console.error(`Rejecting POST /message: Sessão não encontrada para sessionId='${sessionId}'`);
+      res.status(404).send(`Sessão não encontrada: ${sessionId}`);
+      return;
+    }
+
+    try {
       await transport.handlePostMessage(req, res);
-    } else {
-      res.status(500).send("Conexão SSE não estabelecida");
+    } catch (e) {
+      console.error("Erro ao processar mensagem MCP:", e);
+      res.status(500).send("Erro interno ao processar mensagem.");
     }
   });
 
+  // Também iniciamos o StdioServerTransport para que o IDE/Antigravity consiga conectar via "command": "node"
+  // de forma nativa e super estável (como funcionava antes), mantendo o Express/SSE ativo na porta 3004
+  // para cumprir o requisito estrito do trabalho acadêmico.
+  const stdioTransport = new StdioServerTransport();
+  await server.connect(stdioTransport);
+  console.error("StdioServerTransport iniciado com sucesso para conexões via command line.");
+
   const port = process.env.PORT || 3004;
   app.listen(port, () => {
-    console.log(`Crypto Pulse MCP Server rodando na porta ${port} (SSE).`);
+    console.error(`Crypto Pulse MCP Server rodando na porta ${port} (SSE).`);
   });
 }
 
